@@ -54,5 +54,5 @@ Make sure to adapt the file names and types according to your needs.
 
 ## Additional Documentation
 
-- babbar.tech API documentation: [lien vers la documentation](https://www.babbar.tech/doc-api/)
+- babbar.tech API documentation: [babbar tech doc](https://www.babbar.tech/doc-api/)
 - Known issues: Check the `issues.md` file, if present, for a list of known issues and workarounds.
