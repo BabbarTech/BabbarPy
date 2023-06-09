@@ -28,7 +28,7 @@ import os
 import time
 import sys
 
-def h_anchors(host, api_key):
+def d_anchors(domain, api_key):
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
@@ -36,9 +36,9 @@ def h_anchors(host, api_key):
     params = {
         'api_token': api_key
     }
-    url = 'https://www.babbar.tech/api/host/anchors'
+    url = 'https://www.babbar.tech/api/domain/anchors'
     data = {
-        'host': host,
+        'domain': domain,
     }
     all_data = []  # to store all the retrieved data
     response = requests.post(url, headers=headers, params=params, json=data)
@@ -64,21 +64,21 @@ def get_api_key():
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'  # Get hosts file from CLI or use default
-    if hosts_file == 'default_hosts.txt':
-        with open('default_hosts.txt', 'w') as fichier:
-            fichier.write('www.babbar.tech')
-    with open(hosts_file, 'r') as f:
-        hosts = [line.strip() for line in f]
-        for host in hosts:
-            with open(f'{host}_anch.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
+    domains_file = sys.argv[1] if len(sys.argv) > 1 else 'default_domains.txt'
+    if domains_file == 'default_domains.txt':
+        with open('default_domains.txt', 'w') as fichier:
+            fichier.write('babbar.tech')
+    with open(domains_file, 'r') as f:
+        domains = [line.strip() for line in f]
+        for domain in domains:
+            with open(f'{domain}_anch.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(['Anchor', 'percent', 'links', 'hosts'])
-            all_data = h_anchors(host,api_key)
-            with open(f'{host}_anch.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+                writer.writerow(['Anchor', 'percent', 'links', 'domains'])
+            all_data = d_anchors(domain,api_key)
+            with open(f'{domain}_anch.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
                 for row in all_data:
-                    writer.writerow([row.get('text', ''), row.get('percent', ''), row.get('linkCount', ''), row.get('hostCount', '')])
+                    writer.writerow([row.get('text', ''), row.get('percent', ''), row.get('linkCount', ''), row.get('domainCount', '')])
 
 if __name__ == "__main__":
     main()

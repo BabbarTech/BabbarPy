@@ -39,7 +39,7 @@ def get_api_key():
     else:
         return config['API']['api_key']
 
-def h_duplicate(host, api_key):
+def d_duplicate(domain, api_key):
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
@@ -47,9 +47,9 @@ def h_duplicate(host, api_key):
     params = {
         'api_token': api_key
     }
-    url = 'https://www.babbar.tech/api/host/duplicate'
+    url = 'https://www.babbar.tech/api/domain/duplicate'
     data = {
-        'host': host,
+        'domain': domain
     }
     response = requests.post(url, headers=headers, params=params, json=data)
     response_data = response.json()
@@ -68,19 +68,19 @@ def h_duplicate(host, api_key):
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'
-    if hosts_file == 'default_hosts.txt':
-        with open('default_hosts.txt', 'w') as fichier:
-            fichier.write('www.babbar.tech')
-    with open(hosts_file, 'r') as f:
-        hosts = [line.strip() for line in f]
-        for host in hosts:
-            with open(f'{host}_internal_duplic.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+    domains_file = sys.argv[1] if len(sys.argv) > 1 else 'default_domains.txt'  # Get hosts file from CLI or use default
+    if domains_file == 'default_domains.txt':
+        with open('default_domains.txt', 'w') as fichier:
+            fichier.write('krinein.com')
+    with open(domains_file, 'r') as f:
+        domains = [line.strip() for line in f]
+        for domain in domains:
+            with open(f'{domain}_internal_duplic.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
                 if csvfile.tell() == 0:
                     writer.writerow(["rank", "percent_from", "percent_to", "source", "target"])
-            response_data = h_duplicate(host, api_key)
-            with open(f'{host}_internal_duplic.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+            response_data = d_duplicate(domain, api_key)
+            with open(f'{domain}_internal_duplic.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerows(response_data)
 

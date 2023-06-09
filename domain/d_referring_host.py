@@ -39,7 +39,7 @@ def get_api_key():
     else:
         return config['API']['api_key']
 
-def h_backlinks_url_list(host, api_key):
+def d_referring_host(domain, api_key):
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
@@ -47,44 +47,55 @@ def h_backlinks_url_list(host, api_key):
     params = {
         'api_token': api_key
     }
-    url = 'https://www.babbar.tech/api/host/backlinks/url/list'
+    url = 'https://www.babbar.tech/api/domain/backlinks/host'
     data = {
-        'host': host,
-        'n': 499,
+        'domain': domain,
+        'n': 500,
         'offset': 0
     }
-    all_data = []  # to store all the retrieved data
+    all_data = []
     while True:
         response = requests.post(url, headers=headers, params=params, json=data)
         response_data = response.json()
-        if 'links' in response_data and len(response_data['links']) > 0:
-            part_data = response_data['links']
+        if 'backlinks' in response_data and len(response_data['backlinks']) > 0:
+            all_data = response_data['backlinks']
+            numBacklinksUsed = response_data.get('numBacklinksUsed', 0)
+            numBacklinksTotal = response_data.get('numBacklinksTotal', 0)
             remain = int(response.headers.get('X-RateLimit-Remaining', 1))
             if remain == 0:
-                print(f"holding at{data['offset']}")
+                print(f"holding at {data['offset']}")
                 time.sleep(60)
             data['offset'] += 1
-            all_data.extend(part_data)
-        else:
-            return all_data
+            return {"all_data":all_data, "numBacklinksUsed" : numBacklinksUsed, "numBacklinksTotal" : numBacklinksTotal}
+        break
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'
-    if hosts_file == 'default_hosts.txt':
-        with open('default_hosts.txt', 'w') as fichier:
-            fichier.write('www.babbar.tech')
-    with open(hosts_file, 'r') as f:
-        hosts = [line.strip() for line in f]
-        for host in hosts:
-            with open(f'{host}_bl.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
+    domains_file = sys.argv[1] if len(sys.argv) > 1 else 'default_domains.txt'
+    if domains_file == 'default_domains.txt':
+        with open('default_domains.txt', 'w') as fichier:
+            fichier.write('babbar.tech')
+    with open(domains_file, 'r') as f:
+        domains = [line.strip() for line in f]
+        with open('domain_list_ref_hosts_overview.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(['source', 'target', 'linkText', 'linkType', 'linkRels', 'language', 'pageValue', 'semanticValue', 'babbarAuthorityScore', 'pageTrust'])
-            all_data = h_backlinks_url_list(host, api_key)
-            with open(f'{host}_bl.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+                writer.writerow(['domain', 'number of backlinks used', 'Total number of backlinks'])
+        for domain in domains:
+            dict_data = d_referring_host(domain, api_key)
+            all_data = dict_data['all_data']
+            numBacklinksUsed = dict_data['numBacklinksUsed']
+            numBacklinksTotal = dict_data['numBacklinksTotal']
+            with open(f'{domain}_anchors.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['host', 'anchor text'])
+            with open(f'{domain}_anchors.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
                 for row in all_data:
-                    writer.writerow([row.get('source', ''), row.get('target', ''), row.get('linkText', ''), row.get('linkType', ''), row.get('linkRels', []), row.get('language', ''), row.get('pageValue', ''), row.get('semanticValue', ''), row.get('babbarAuthorityScore', ''), row.get('pageTrust', '')])
+                    anchors = ", ".join([anchor for anchor in row.get('anchors', [])])
+                    writer.writerow([row.get('host', ''), anchors])
+            with open('domain_list_ref_hosts_overview.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow([domain, numBacklinksUsed, numBacklinksTotal])
 
 if __name__ == "__main__":
     main()

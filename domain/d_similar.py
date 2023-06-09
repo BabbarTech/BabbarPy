@@ -21,35 +21,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import configparser
-import csv
 import requests
-import os
+import csv
 import time
+import configparser
+import os
 import sys
 
-def h_anchors(host, api_key):
+def d_similar(api_key, domain):
+    json_payload = {
+        "domain": domain,
+        "n": 100
+    }
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
     }
-    params = {
-        'api_token': api_key
-    }
-    url = 'https://www.babbar.tech/api/host/anchors'
-    data = {
-        'host': host,
-    }
-    all_data = []  # to store all the retrieved data
-    response = requests.post(url, headers=headers, params=params, json=data)
-    response_data = response.json()
-    if 'backlinks' in response_data and len(response_data['backlinks']) > 0:
-        all_data = response_data['backlinks']
-        remain = int(response.headers.get('X-RateLimit-Remaining', 1))
-        if remain == 0:
-            print(f"holding at{data['offset']}")
-            time.sleep(60)
-        return all_data
+    params = {'api_token': api_key}
+    url = "https://www.babbar.tech/api/domain/similar"
+    response = requests.post(url, headers=headers, params=params, json=json_payload)
+    remain = int(response.headers.get('X-RateLimit-Remaining', 1))
+    if remain == 0:
+        print(f"holding at {domain}")
+        time.sleep(60)
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print(f'Request failed with status code {response.status_code}')
 
 def get_api_key():
     config = configparser.ConfigParser()
@@ -64,21 +63,20 @@ def get_api_key():
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'  # Get hosts file from CLI or use default
-    if hosts_file == 'default_hosts.txt':
-        with open('default_hosts.txt', 'w') as fichier:
-            fichier.write('www.babbar.tech')
-    with open(hosts_file, 'r') as f:
-        hosts = [line.strip() for line in f]
-        for host in hosts:
-            with open(f'{host}_anch.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(['Anchor', 'percent', 'links', 'hosts'])
-            all_data = h_anchors(host,api_key)
-            with open(f'{host}_anch.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
-                writer = csv.writer(csvfile)
-                for row in all_data:
-                    writer.writerow([row.get('text', ''), row.get('percent', ''), row.get('linkCount', ''), row.get('hostCount', '')])
+    domains_file = sys.argv[1] if len(sys.argv) > 1 else 'default_domains.txt'  # Get domains file from CLI or use default
+    if domains_file == 'default_domains.txt':
+        with open('default_domains.txt', 'w') as fichier:
+            fichier.write('babbar.tech')
+    with open(domains_file, 'r') as f:
+        domains = [line.strip() for line in f]
+        with open('domain_similar.csv', 'w', newline='', encoding='utf-8-sig') as f:
+            writer = csv.DictWriter(f, ["domain", "similar", "lang", "score"])
+            writer.writeheader()
+            for domain in domains:
+                data = d_similar(api_key, domain)
+                for row in data:
+                    row['domain'] = domain
+                    writer.writerow(row)
 
 if __name__ == "__main__":
     main()

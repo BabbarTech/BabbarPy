@@ -61,7 +61,7 @@ def h_ip(host, api_key):
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'  # Get hosts file from CLI or use default
+    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'
     if hosts_file == 'default_hosts.txt':
         with open('default_hosts.txt', 'w') as fichier:
             fichier.write('www.babbar.tech')

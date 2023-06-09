@@ -21,12 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import configparser
 import csv
 import requests
+import sys
+import configparser
 import os
 import time
-import sys
 
 def get_api_key():
     config = configparser.ConfigParser()
@@ -39,7 +39,7 @@ def get_api_key():
     else:
         return config['API']['api_key']
 
-def h_duplicate(host, api_key):
+def d_backlinks_url(domain, api_key, sort='desc', type_='semanticValue'):
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
@@ -47,42 +47,42 @@ def h_duplicate(host, api_key):
     params = {
         'api_token': api_key
     }
-    url = 'https://www.babbar.tech/api/host/duplicate'
+    url = 'https://www.babbar.tech/api/domain/backlinks/url'
     data = {
-        'host': host,
+        'domain': domain,
+        'limit': 30000,
+        'sort': sort,
+        'type': type_
     }
+    all_data = []  # to store all the retrieved data
     response = requests.post(url, headers=headers, params=params, json=data)
     response_data = response.json()
-    remain = int(response.headers.get('X-RateLimit-Remaining', 1))
-    if remain == 0:
-        time.sleep(60)
-    csv_data = []
-    for item in response_data:
-        rank = item["rank"]
-        pairs_example = item.get("pairs_example", [])
-        for pair in pairs_example:
-            source = pair["source"]
-            target = pair["target"]
-            csv_data.append([rank, item["percent_from"], item["percent_to"], source, target])
-    return csv_data
+    if 'links' in response_data and len(response_data['links']) > 0:
+        part_data = response_data['links']
+        remain = int(response.headers.get('X-RateLimit-Remaining', 1))
+        if remain == 0:
+            print(f"holding at{data['offset']}")
+            time.sleep(60)
+        all_data.extend(part_data)
+    return all_data
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'
-    if hosts_file == 'default_hosts.txt':
-        with open('default_hosts.txt', 'w') as fichier:
-            fichier.write('www.babbar.tech')
-    with open(hosts_file, 'r') as f:
-        hosts = [line.strip() for line in f]
-        for host in hosts:
-            with open(f'{host}_internal_duplic.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+    domains_file = sys.argv[1] if len(sys.argv) > 1 else 'default_domains.txt'
+    if domains_file == 'default_domains.txt':
+        with open('default_domains.txt', 'w') as fichier:
+            fichier.write('babbar.tech')
+    with open(domains_file, 'r') as f:
+        domains = [line.strip() for line in f]
+        for domain in domains:
+            with open(f'{domain}_bl.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
-                if csvfile.tell() == 0:
-                    writer.writerow(["rank", "percent_from", "percent_to", "source", "target"])
-            response_data = h_duplicate(host, api_key)
-            with open(f'{host}_internal_duplic.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
+                writer.writerow(['source', 'target', 'linkText', 'linkType', 'linkRels', 'language', 'pageValue', 'semanticValue', 'babbarAuthorityScore', 'pageTrust'])
+            all_data = d_backlinks_url(domain, api_key)
+            with open(f'{domain}_bl.csv', 'a', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerows(response_data)
+                for row in all_data:
+                    writer.writerow([row.get('source', ''), row.get('target', ''), row.get('linkText', ''), row.get('linkType', ''), row.get('linkRels', []), row.get('language', ''), row.get('pageValue', ''), row.get('semanticValue', ''), row.get('babbarAuthorityScore', ''), row.get('pageTrust', '')])
 
 if __name__ == "__main__":
     main()

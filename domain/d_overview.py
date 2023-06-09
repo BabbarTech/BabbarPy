@@ -29,11 +29,11 @@ import configparser
 import os
 import time
 
-def h_overview(host, api_key):
-    endpoint = 'https://www.babbar.tech/api/host/overview/main'
+def d_overview(domain, api_key):
+    endpoint = 'https://www.babbar.tech/api/domain/overview/main'
     headers = {"accept": "application/json", "Content-Type": "application/json"}
     params = {'api_token': api_key}
-    payload = {"host": host}
+    payload = {"domain": domain}
     response = requests.post(endpoint, json=payload, headers=headers, params=params)
     remain = int(response.headers.get('X-RateLimit-Remaining'))
     if remain == 0:
@@ -43,11 +43,11 @@ def h_overview(host, api_key):
     else:
         print(f'Data collection error : {response.status_code}')
 
-def write_to_csv(data, dict_writer, host):
+def write_to_csv(data, dict_writer, domain):
     dict_writer.writerow({
-        'host': host,
-        'hostValue': data['hostValue'],
-        'hostTrust': data['hostTrust'],
+        'domain': domain,
+        'domainValue': data['domainValue'],
+        'domainTrust': data['domainTrust'],
         'semanticValue': data['semanticValue'],
         'babbarAuthorityScore': data['babbarAuthorityScore'],
         'knownUrls': data['knownUrls'],
@@ -71,21 +71,21 @@ def get_api_key():
 
 def main():
     api_key = get_api_key()
-    hosts_file = sys.argv[1] if len(sys.argv) > 1 else 'default_hosts.txt'
-    if hosts_file == 'default_hosts.txt':
-        with open('default_hosts.txt', 'w') as fichier:
-            fichier.write('www.babbar.tech')
-    with open(hosts_file, 'r') as f:
-        hosts = [line.strip() for line in f]
-    keys = ['host', 'hostValue', 'hostTrust', 'semanticValue', 'babbarAuthorityScore', 
+    domains_file = sys.argv[1] if len(sys.argv) > 1 else 'default_domains.txt'  # Get domains file from CLI or use default
+    if domains_file == 'default_domains.txt':
+        with open('default_domains.txt', 'w') as fichier:
+            fichier.write('babbar.tech')
+    with open(domains_file, 'r') as f:
+        domains = [line.strip() for line in f]
+    keys = ['domain', 'domainValue', 'domainTrust', 'semanticValue', 'babbarAuthorityScore', 
             'knownUrls', 'backlinks_linkCount', 'backlinks_hostCount', 'backlinks_domainCount', 
             'backlinks_ipCount', 'backlinks_asCount']
-    with open('h_output.csv', 'w', newline='') as f:
+    with open('d_output.csv', 'w', newline='') as f:
         dict_writer = csv.DictWriter(f, keys)
         dict_writer.writeheader()
-        for host in hosts:
-            data = h_overview(host, api_key)
-            write_to_csv(data, dict_writer, host)
+        for domain in domains:
+            data = d_overview(domain, api_key)
+            write_to_csv(data, dict_writer, domain)
 
 if __name__ == "__main__":
     main()
