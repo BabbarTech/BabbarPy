@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2023 BabbarTech & PierreFECalvet
+Copyright (c) 2023 BabbarTech
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,21 @@ import time
 
 def get_api_key():
     config = configparser.ConfigParser()
+    # Check if the 'config.ini' file does not exist or cannot be read,
+    # or if the 'API' section or 'api_key' key are not present in the config
     if not os.path.exists('config.ini') or not config.read('config.ini') or not 'API' in config or not 'api_key' in config['API']:
+        # Prompt the user to enter their API key
         api_key = input("Entrez votre clé API: ")
+        # Update the 'config' object with the API key
         config['API'] = {'api_key': api_key}
+        # Write the updated config object to the 'config.ini' file
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
+        # Return the API key
         return api_key
     else:
+        # If the 'config.ini' file exists and contains the API key,
+        # return the API key from the config
         return config['API']['api_key']
 
 def u_referring_host(url_b, api_key):
@@ -53,14 +61,20 @@ def u_referring_host(url_b, api_key):
         'n': 499,
         'offset': 0
     }
-    all_data = []
-    last_data = None
+    all_data = [] 
+    # List to store all backlink data
+    last_data = None  
+    # Variable to track the previous batch of backlinks
+    # Continue making requests until no more new backlinks are received
     while True:
         response = requests.post(url, headers=headers, params=params, json=data)
         response_data = response.json()
-        numBacklinksUsed = response_data.get('numBacklinksUsed', 0)
-        numBacklinksTotal = response_data.get('numBacklinksTotal', 0)
-        part_data = response_data.get('backlinks', [])
+        numBacklinksUsed = response_data.get('numBacklinksUsed', 0)  
+        # Number of backlinks used
+        numBacklinksTotal = response_data.get('numBacklinksTotal', 0)  
+        # Total number of backlinks
+        part_data = response_data.get('backlinks', [])  
+        # Partial data containing backlinks
         # Exit the loop when no more new backlinks are received
         if part_data == last_data:
             break
@@ -69,9 +83,11 @@ def u_referring_host(url_b, api_key):
         if remain == 0:
             print(f"holding at {data['offset']}")
             time.sleep(60)
-        data['offset'] += len(part_data)
-        all_data.extend(part_data)
-    return {"all_data":all_data, "numBacklinksUsed" : numBacklinksUsed, "numBacklinksTotal" : numBacklinksTotal}
+        data['offset'] += len(part_data)  
+        # Update the offset for the next batch of backlinks
+        all_data.extend(part_data)  
+        # Add the current batch of backlinks to the overall list
+    return {"all_data": all_data, "numBacklinksUsed": numBacklinksUsed, "numBacklinksTotal": numBacklinksTotal}
 
 def main():
     api_key = get_api_key()
@@ -86,6 +102,7 @@ def main():
             url_c = url_c.replace("/", "_")
             url_c = url_c.replace(".", "_")
             all_data = u_referring_host(url, api_key)
+            # Write backlink data to a CSV file
             with open(f'{url_c}_anchors.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(['host', 'anchor text'])

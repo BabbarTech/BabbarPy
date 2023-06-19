@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2023 BabbarTech & PierreFECalvet
+Copyright (c) 2023 BabbarTech
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,44 +30,68 @@ import time
 
 def get_api_key():
     config = configparser.ConfigParser()
+    # Check if the 'config.ini' file does not exist or cannot be read,
+    # or if the 'API' section or 'api_key' key are not present in the config
     if not os.path.exists('config.ini') or not config.read('config.ini') or not 'API' in config or not 'api_key' in config['API']:
+        # Prompt the user to enter their API key
         api_key = input("Entrez votre clé API: ")
+        # Update the 'config' object with the API key
         config['API'] = {'api_key': api_key}
+        # Write the updated config object to the 'config.ini' file
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
+        # Return the API key
         return api_key
     else:
+        # If the 'config.ini' file exists and contains the API key,
+        # return the API key from the config
         return config['API']['api_key']
 
 def onpage_analyzis(url, api_key):
+    # Set the headers for the API request
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json'
     }
+    # Set the API token in the request parameters
     params = {
         'api_token': api_key
     }
+    # Define the API URL
     url_api = 'https://www.babbar.tech/api/analyze-on-page'
+    # Set the data payload for the request
     data = {
         'url': url,
     }
+    # Send a POST request to the API
     response = requests.post(url_api, headers=headers, params=params, json=data)
+    # Check the remaining rate limit
     remain = int(response.headers.get('X-RateLimit-Remaining', 1))
+    # If the rate limit is reached, wait for 60 seconds before proceeding
     if remain == 0:
         time.sleep(60)
+    # Parse the JSON response data
     response_data = response.json()
+    # Return the response data
     return response_data
 
 def main():
+    # Get the API key
     api_key = get_api_key()
+    # Check if a custom URLs file is provided as a command-line argument
+    # Otherwise, use the default URLs file 'default_urls.txt'
     urls_file = sys.argv[1] if len(sys.argv) > 1 else 'default_urls.txt'
+    # If the default URLs file is used, create it and add a default URL
     if urls_file == 'default_urls.txt':
         with open('default_urls.txt', 'w') as fichier:
             fichier.write('https://www.babbar.tech')
+    # Read the URLs from the file
     with open(urls_file, 'r') as f:
         urls = [line.strip() for line in f]
+    # Create a new CSV file to store the analysis results
     with open('onpage_analyzis_results.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
+        # Write the header row in the CSV file
         writer.writerow(['url', 'h1_count', 'h1_list', 'title_count', 'title_list',
                          'meta_description_count', 'meta_description_list', 'h2_count',
                          'h3_count', 'h4_count', 'h5_count', 'h6_count', 'h2_list',
@@ -78,13 +102,17 @@ def main():
                          'a_list_follow', 'a_list_internal', 'meta_robots_list',
                          'rel_canonical_list', 'relevant_text', 'text_percentage',
                          'relevant_text_percentage'])
+    # Perform on-page analysis for each URL
     for url in urls:
         onpage_a_tocsv(url, api_key)
         
 def onpage_a_tocsv(url, api_key):
+    # Perform on-page analysis for the given URL and retrieve the data
     data = onpage_analyzis(url, api_key)
+    # Open the CSV file in append mode to add the analysis results
     with open('onpage_analyzis_results.csv', 'a', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
+        # Extract relevant data from the response data and assign them to variables
         url = data['url']
         h1_count = data['result']['balises']['h1']['count']['total']
         h1_list = '|||'.join([item['nodeValue'] for item in data['result']['balises']['h1']['list']]).replace('\n', ' ')
@@ -120,6 +148,7 @@ def onpage_a_tocsv(url, api_key):
         relevant_text = data['result']['text']['relevant_text'].replace('\n', ' ')
         text_percentage = data['result']['text']['text_percentage']
         relevant_text_percentage = data['result']['text']['relevant_text_percentage']
+        # Write a row with the extracted data to the CSV file
         writer.writerow([url, h1_count, h1_list, title_count, title_list, meta_description_count,
                          meta_description_list, h2_count, h3_count, h4_count, h5_count,
                          h6_count, h2_list, h3_list, h4_list, h5_list, h6_list, img_count,

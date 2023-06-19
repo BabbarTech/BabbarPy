@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2023 BabbarTech & PierreFECalvet
+Copyright (c) 2023 BabbarTech
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -89,21 +89,33 @@ def babbar_internal_linking_to_csv(url_txt_file,API):
 
 def get_api_key():
     config = configparser.ConfigParser()
+    # Check if the 'config.ini' file does not exist or cannot be read,
+    # or if the 'API' section or 'api_key' key are not present in the config
     if not os.path.exists('config.ini') or not config.read('config.ini') or not 'API' in config or not 'api_key' in config['API']:
+        # Prompt the user to enter their API key
         api_key = input("Entrez votre clé API: ")
+        # Update the 'config' object with the API key
         config['API'] = {'api_key': api_key}
+        # Write the updated config object to the 'config.ini' file
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
+        # Return the API key
         return api_key
     else:
+        # If the 'config.ini' file exists and contains the API key,
+        # return the API key from the config
         return config['API']['api_key']
 
 def main():
+    # Check if a URLs file is provided as a command-line argument, otherwise use the default file 'default_urls.txt'
     urls_file = sys.argv[1] if len(sys.argv) > 1 else 'default_urls.txt'
+    # Retrieve the API key
     api_key = get_api_key()
+    # If the URLs file is the default file, create it and write a sample URL
     if urls_file == 'default_urls.txt':
         with open('default_urls.txt', 'w') as fichier:
             fichier.write('https://www.babbar.tech')
+    # Extract Babbar internal linking data and save it to a CSV file
     babbar_internal_linking_to_csv(urls_file, api_key)
 
 if __name__ == "__main__":
