@@ -1,5 +1,10 @@
 import os
 import configparser
+import subprocess
+import sys
+
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def get_api_key():
     config = configparser.ConfigParser()
@@ -11,8 +16,12 @@ def get_api_key():
         return api_key
     else:
         return config['API']['api_key']
-    
+
 def main():
+    with open("requirements.txt", 'r') as f:
+        packages = [line.strip() for line in f]
+        for package in packages:
+            install(package)
     get_api_key()
 
 if __name__ == "__main__":
