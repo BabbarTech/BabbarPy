@@ -49,7 +49,7 @@ def get_api_key():
         # return the API key from the config
         return config['API']['api_key']
 
-def u_backlinks_u(url, api_token, sort="desc", type="semanticValue"):
+def u_backlinks_url(url, api_token, sort="desc", type="semanticValue"):
     # Specify the API endpoint URL
     api_url = "https://www.babbar.tech/api/url/backlinks/url"
     # Set the request headers
@@ -113,7 +113,7 @@ def main():
         # Iterate over each URL
         for url in urls:
             # Retrieve backlink data for the URL
-            data = u_backlinks_u(url, api_key)
+            data = u_backlinks_url(url, api_key)
             # Modify the URL to create a corresponding CSV file name
             url_c = url.replace('://','_')
             url_c = url_c.replace('/','_')

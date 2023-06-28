@@ -49,7 +49,7 @@ def get_api_key():
         # return the API key from the config
         return config['API']['api_key']
 
-def h_backlinks_u(host, api_token, sort="desc", type="semanticValue"):
+def h_backlinks_url(host, api_token, sort="desc", type="semanticValue"):
     api_url = "https://www.babbar.tech/api/host/backlinks/url"
     headers = {
         "accept": "application/json",
@@ -101,7 +101,7 @@ def main():
         hosts = [line.strip() for line in f]
         # Read the hosts from the file
         for host in hosts:
-            data = h_backlinks_u(host, api_key)
+            data = h_backlinks_url(host, api_key)
             csv_file = f'{host}_bl.csv'
             if not os.path.exists(csv_file):
                 with open(csv_file, 'w', newline='', encoding='utf-8-sig') as csvfile:
