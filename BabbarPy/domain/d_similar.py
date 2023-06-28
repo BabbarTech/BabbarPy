@@ -47,7 +47,7 @@ def get_api_key():
         # return the API key from the config
         return config['API']['api_key']
 
-def d_similar(api_key, domain):
+def d_similar(domain, api_key):
     # Set JSON payload
     json_payload = {
         "domain": domain,
@@ -94,7 +94,7 @@ def main():
             writer.writeheader()
             for domain in domains:
                 # Get similar domains data
-                data = d_similar(api_key, domain)
+                data = d_similar(domain, api_key)
                 for row in data:
                     row['domain'] = domain
                     writer.writerow(row)

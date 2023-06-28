@@ -6,10 +6,10 @@ import configparser
 import sys
 import os
 
-def d_fetches(domain, lang, API_KEY, data=[""]):
+def d_fetches(domain, api_key, lang="fr"):
     a = 0
     data_list = []
-    url = "https://www.babbar.tech/api/domain/fetches/list?api_token=" + API_KEY
+    url = "https://www.babbar.tech/api/domain/fetches/list?api_token=" + api_key
     headers = CaseInsensitiveDict()
     headers["accept"] = "application/json"
     headers["Content-Type"] = "application/json"
@@ -65,7 +65,7 @@ def d_fetches_to_csv(domains_file, lang, API):
         domains = [line.strip() for line in f]
         # Fetch data for each domain and extend the data_list
         for domain in domains:
-            data_list.extend(d_fetches(domain, lang, API))
+            data_list.extend(d_fetches(domain, API, lang))
     # Convert the data_list to a DataFrame
     df = pd.DataFrame(data_list, columns=['domain', 'url', 'lang', 'http'])
     # Write the DataFrame to a CSV file

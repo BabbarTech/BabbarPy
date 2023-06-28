@@ -47,7 +47,7 @@ def get_api_key():
         # return the API key from the config
         return config['API']['api_key']
 
-def h_spotfinder(api_key, term):
+def h_spotfinder(term, api_key):
     # API endpoint URL
     url = 'https://www.babbar.tech/api/host/spotsfinder'
     # Headers for the API request
@@ -102,7 +102,7 @@ def main():
             # Process each term
             for term in terms:
                 # Fetch spotfinder results for the term
-                rows = h_spotfinder(api_key, term)
+                rows = h_spotfinder(term, api_key)
                 # Write rows to the CSV file
                 for row in rows:
                     writer.writerow(row)

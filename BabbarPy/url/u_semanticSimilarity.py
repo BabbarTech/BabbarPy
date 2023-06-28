@@ -28,7 +28,7 @@ import os
 import sys
 import time
 
-def u_semanticSimilarity(api_key, source_url, target_url):
+def u_semanticSimilarity(source_url, target_url, api_key):
     url = "https://www.babbar.tech/api/url/semanticSimilarity"
     headers = {"accept": "application/json", "Content-Type": "application/json"}
     params = {'api_token': api_key}
@@ -90,7 +90,7 @@ def main():
         source = row['source']
         target = row['target']
         # Compute semantic similarity between the source and target URLs
-        df = u_semanticSimilarity(api_key, source, target)
+        df = u_semanticSimilarity(source, target, api_key)
         # Write the similarity results to a CSV file
         with open("semantic_similarity_results.csv", 'a', newline='') as f:
             df.to_csv(f, header=f.tell() == 0, index=False)

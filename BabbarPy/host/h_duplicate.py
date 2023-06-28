@@ -71,9 +71,11 @@ def h_duplicate(host, api_key):
         pairs_example = item.get("pairs_example", [])
         # Extract the rank and pairs_example data from the response
         for pair in pairs_example:
-            source = pair["source"]
-            target = pair["target"]
-            csv_data.append([rank, item["percent_from"], item["percent_to"], source, target])
+            if isinstance(pair, dict):
+                source = pair.get("source")
+                target = pair.get("target")
+                if source is not None and target is not None:
+                    csv_data.append([rank, item["percent_from"], item["percent_to"], source, target])
             # Extract the source and target information and append it to the csv_data list
     return csv_data
 

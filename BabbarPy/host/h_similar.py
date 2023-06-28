@@ -47,7 +47,7 @@ def get_api_key():
         # return the API key from the config
         return config['API']['api_key']
 
-def h_similar(api_key, host):
+def h_similar(host, api_key):
     # JSON payload for the API request
     json_payload = {
         "host": host,
@@ -96,7 +96,7 @@ def main():
             # Process each host
             for host in hosts:
                 # Fetch similar hosts for the current host
-                data = h_similar(api_key, host)
+                data = h_similar(host, api_key)
                 # Write rows to the CSV file
                 for row in data:
                     row['host'] = host

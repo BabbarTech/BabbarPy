@@ -56,7 +56,6 @@ def u_keywords(url, api_key, start_date, end_date, min=1, max=100, lang="fr", co
             "max": max,
             "api_token": api_key
         }
-        print(payload)
         # Send API request to retrieve keyword data
         response = requests.post(api_url, json=payload)
         print(response)

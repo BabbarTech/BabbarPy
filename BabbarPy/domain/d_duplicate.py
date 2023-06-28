@@ -74,9 +74,11 @@ def d_duplicate(domain, api_key):
         rank = item["rank"]
         pairs_example = item.get("pairs_example", [])
         for pair in pairs_example:
-            source = pair["source"]
-            target = pair["target"]
-            csv_data.append([rank, item["percent_from"], item["percent_to"], source, target])
+            if isinstance(pair, dict):
+                source = pair.get("source")
+                target = pair.get("target")
+                if source is not None and target is not None:
+                    csv_data.append([rank, item["percent_from"], item["percent_to"], source, target])
     # Return the extracted data
     return csv_data
 

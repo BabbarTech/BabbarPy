@@ -48,10 +48,10 @@ def get_api_key():
         # return the API key from the config
         return config['API']['api_key']
 
-def h_fetches(host, lang, API_KEY, data=[""]):
+def h_fetches(host, api_key, lang="fr"):
     a = 0
     data_list = []
-    url = "https://www.babbar.tech/api/host/fetches/list?api_token=" + API_KEY
+    url = "https://www.babbar.tech/api/host/fetches/list?api_token=" + api_key
     headers = CaseInsensitiveDict()
     headers["accept"] = "application/json"
     headers["Content-Type"] = "application/json"
@@ -109,7 +109,7 @@ def h_fetches_to_csv(hosts_file, lang, API):
         hosts = [line.strip() for line in f]
         # Read the hosts from the file
         for host in hosts:
-            data_list.extend(h_fetches(host, lang, API))
+            data_list.extend(h_fetches(host, API, lang))
             # Fetch the data for each host and extend the data list
     df = pd.DataFrame(data_list, columns=['host', 'url', 'lang', 'http'])
     # Create a DataFrame from the data list
