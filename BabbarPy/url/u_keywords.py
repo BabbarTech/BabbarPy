@@ -29,7 +29,7 @@ import configparser
 import os
 import datetime
 
-def u_keywords(urls, api_key, start_date, end_date, min =1, max=100, lang ="fr", country="FR"):
+def u_keywords(url, api_key, start_date, end_date, min=1, max=100, lang="fr", country="FR"):
     # Convert start_date and end_date strings to datetime objects
     start_datetime = datetime.date(int(start_date.split("-")[0]), int(start_date.split("-")[1]), int(start_date.split("-")[2]))
     end_datetime = datetime.date(int(end_date.split("-")[0]), int(end_date.split("-")[1]), int(end_date.split("-")[2]))
@@ -44,33 +44,34 @@ def u_keywords(urls, api_key, start_date, end_date, min =1, max=100, lang ="fr",
     for i in range(periods):
         print("Day " + str(i + 1))
         # Iterate over each URL
-        for url in urls:
-            # Prepare payload for API request
-            payload = {
-                "url": url,
-                "lang": lang,
-                "country": country,
-                "date": start_date,
-                "offset": 0,
-                "n": 500,
-                "min": min,
-                "max": max,
-                "api_token": api_key
-            }
-            # Send API request to retrieve keyword data
-            response = requests.post(api_url, json=payload)
-            data = response.json()
-            entries = data.get('entries', [])
-            # Process each entry and add it to the data_to_export list
-            for entry in entries:
-                data_to_export.append({
-                    'url': entry['url'],
-                    'keywords': entry['keywords'],
-                    'rank': entry['rank'],
-                    'subRank': entry['subRank'],
-                    'feature': entry['feature'],
-                    'date': current_datetime
-                })
+        # Prepare payload for API request
+        payload = {
+            "url": url,
+            "lang": lang,
+            "country": country,
+            "date": str(current_datetime),
+            "offset": 0,
+            "n": 499,
+            "min": min,
+            "max": max,
+            "api_token": api_key
+        }
+        print(payload)
+        # Send API request to retrieve keyword data
+        response = requests.post(api_url, json=payload)
+        print(response)
+        data = response.json()
+        entries = data.get('entries', [])
+        # Process each entry and add it to the data_to_export list
+        for entry in entries:
+            data_to_export.append({
+                'url': entry['url'],
+                'keywords': entry['keywords'],
+                'rank': entry['rank'],
+                'subRank': entry['subRank'],
+                'feature': entry['feature'],
+                'date': current_datetime
+            })
         # Increment the current_datetime to the next day
         current_datetime = current_datetime + datetime.timedelta(days=1)
     return data_to_export
@@ -116,7 +117,10 @@ def main():
     with open(source_file, 'r') as file:
         urls = file.read().splitlines()
         # Call the u_keywords function to retrieve keyword data for the URLs within the specified date range
-        data_to_export = u_keywords(urls, api_key, date_formatted, date_formatted)
+        data_to_export = []
+        for url in urls:
+            data = u_keywords(url, api_key, date_formatted, date_formatted)
+            data_to_export.extend(data)
         # Open the output CSV file in append mode and write the retrieved keyword data
         with open('url_keywords_out.csv', 'a', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
