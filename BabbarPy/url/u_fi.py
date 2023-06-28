@@ -28,7 +28,7 @@ import os
 import sys
 import time
 
-def u_fi(api_key, source_url, target_url):
+def u_fi(source_url, target_url, api_key):
     # Define the URL for the API endpoint
     url = "https://www.babbar.tech/api/url/fi"
     # Set the request headers
@@ -98,7 +98,7 @@ def main():
         source = row['source']
         target = row['target']
         # Perform URL translation using the API
-        dataf = u_fi(api_key, source, target)
+        dataf = u_fi(source, target, api_key)
         # Append the results to the 'fi_results.csv' file
         with open("fi_results.csv", 'a', newline='') as f:
             dataf.to_csv(f, header=f.tell() == 0, index=False)
