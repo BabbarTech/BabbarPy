@@ -59,11 +59,10 @@ def h_similar(host, api_key):
         'Content-Type': 'application/json'
     }
     # Parameters for the API request
-    params = {'api_token': api_key}
     # API endpoint URL
-    url = "https://www.babbar.tech/api/host/similar"
+    url = f"https://www.babbar.tech/api/host/similar?api_token={api_key}"
     # Send a POST request to the API
-    response = requests.post(url, headers=headers, params=params, json=json_payload)
+    response = requests.post(url, headers=headers, json=json_payload)
     # Check rate limit and wait if necessary
     remain = int(response.headers.get('X-RateLimit-Remaining', 1))
     if remain == 0:
