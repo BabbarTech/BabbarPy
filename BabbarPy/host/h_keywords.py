@@ -71,7 +71,6 @@ def h_keywords(host, lang, country, start_date, end_date, api_key):
     periods = duration.days + 1  
     # Calculate the number of days to loop over
     for i in range(periods):
-        print("day " + str(i + 1))
         date = str(current_datetime.year) + '-' + str(current_datetime.month) + '-' + str(current_datetime.day)
         while list01 != []:
             data = {
@@ -92,22 +91,28 @@ def h_keywords(host, lang, country, start_date, end_date, api_key):
                 list01 = []
                 break
             else:
-                aDict = resp.json()  
-                # Get the JSON response from the API
-                remain = int(resp.headers.get('X-RateLimit-Remaining'))
-                if remain == 0:
-                    time.sleep(60)  
-                    # Sleep for 60 seconds if the rate limit is reached
-                list01 = aDict['entries']  
-                # Extract the list of keywords from the response
-                kws_fetch = pd.DataFrame(list01,
-                                         columns=['feature', 'rank', 'subRank', 'keywords', 'url', 'numberOfWordsInKeyword',
-                                                  'bks'])
-                kws_bydate = pd.concat([kws_bydate, kws_fetch])  
-                # Append the fetched keywords to kws_bydate DataFrame
-                kws_bydate['date'] = current_datetime  
-                # Add the current date to the DataFrame
-                a = a + 1
+                aDict = resp.json()
+                if 'entries' not in aDict:
+                    print(f"Fetch ended for {host} on {date}")
+                    list01 = []
+                    break
+                else:
+                    print(f"Fetching {host} on {date}")
+                    # Get the JSON response from the API
+                    remain = int(resp.headers.get('X-RateLimit-Remaining'))
+                    if remain == 0:
+                        time.sleep(60)  
+                        # Sleep for 60 seconds if the rate limit is reached
+                    list01 = aDict['entries']  
+                    # Extract the list of keywords from the response
+                    kws_fetch = pd.DataFrame(list01,
+                                            columns=['feature', 'rank', 'subRank', 'keywords', 'url', 'numberOfWordsInKeyword',
+                                                    'bks'])
+                    kws_bydate = pd.concat([kws_bydate, kws_fetch])  
+                    # Append the fetched keywords to kws_bydate DataFrame
+                    kws_bydate['date'] = current_datetime  
+                    # Add the current date to the DataFrame
+                    a = a + 1
         current_datetime = current_datetime + datetime.timedelta(days=1)  
         # Move to the next date
         kws = pd.concat([kws, kws_bydate])  

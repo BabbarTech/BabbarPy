@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name="BabbarPy",
-    version="1.0.8",
+    version="1.0.9",
     description="API routes for www.babbar.tech",
     author="Pierre Calvet",
     author_email="support@babbar.tech",
