@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ## Configuration
 Before you can use the scripts, you need to provide certain configuration information. Here are the steps to follow:
 
-1. Run the setup.py file.
+1. Run the first_start.py file.
 2. You will be prompted to provide your API key in the terminal.
 
 Alternative: Create a config.ini file:
